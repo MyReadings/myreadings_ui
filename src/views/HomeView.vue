@@ -30,7 +30,7 @@
     </swiper-container>
   </div>
 
-  <BookDialog
+  <BookDialog :saving="saving" :save-error="saveError"
     v-if="selectedBookForDetails"
     :model-value="showBookDetailsDialog"
     @update:model-value="showBookDetailsDialog = $event"
@@ -56,6 +56,8 @@ const recentBooks = ref<Book[]>([])
 const recommendedBooks = ref<Book[]>([])
 
 const {
+  saving,
+  saveError,
   showBookDetailsDialog,
   selectedBookForDetails,
   userRatingForSelectedBook,

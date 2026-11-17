@@ -92,7 +92,7 @@
       </v-col>
     </v-row>
 
-    <BookDialog
+    <BookDialog :saving="saving" :save-error="saveError"
       :model-value="showBookDetailsDialog"
       @update:model-value="showBookDetailsDialog = $event"
       :book="selectedBookForDetails"
@@ -128,6 +128,8 @@ const totalResults = ref(0)
 const totalPages = ref(0)
 
 const {
+  saving,
+  saveError,
   showBookDetailsDialog,
   selectedBookForDetails,
   userRatingForSelectedBook,

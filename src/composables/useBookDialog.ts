@@ -10,6 +10,8 @@ export function useBookDialog() {
   const userRatingForSelectedBook = ref(0)
   const bookReadingListIdForSelectedBook = ref<string | null>(null)
   const readingLists = ref<ReadingList[]>([])
+  const saving = ref(false)
+  const saveError = ref('')
   let readingListsLoaded = false
 
   const openBookDialog = async (
@@ -20,6 +22,7 @@ export function useBookDialog() {
     fetchedReviewText: string | null,
     currentReadingListId: string | null,
   ) => {
+    saveError.value = ''
     selectedBookForDetails.value = {
       ...bookBaseInfo,
       reviewStats: fetchedReviewStats,
@@ -64,65 +67,64 @@ export function useBookDialog() {
     onBookUpdatedInList?: (updatedBook: BookWithDetails) => void,
     onBookMoved?: () => Promise<void>,
   ) => {
+    if (saving.value) return
+    saving.value = true
+    saveError.value = ''
     let changed = false
-
-    if (payload.newRating !== undefined && payload.newRating !== userRatingForSelectedBook.value) {
-      try {
-        const newReview = await reviewService.createOrUpdateReview({
+    try {
+      if (payload.newRating !== undefined && payload.newRating !== userRatingForSelectedBook.value) {
+        const review = await reviewService.createOrUpdateReview({
           bookId: payload.bookId,
           rating: payload.newRating,
           reviewText: selectedBookForDetails.value?.reviewText ?? undefined,
           reviewId: selectedBookForDetails.value?.userReviewId ?? null,
         })
-
         if (selectedBookForDetails.value) {
-          selectedBookForDetails.value.userReviewId = newReview.reviewId
+          selectedBookForDetails.value.userReviewId = review.reviewId
           selectedBookForDetails.value.userRating = payload.newRating
-          userRatingForSelectedBook.value = payload.newRating
         }
+        userRatingForSelectedBook.value = payload.newRating
         changed = true
-      } catch (error) {
-        console.error('Error updating/creating rating:', error)
       }
-    }
-
-    if (
-      payload.selectedListId !== undefined &&
-      payload.selectedListId !== bookReadingListIdForSelectedBook.value
-    ) {
+      if (payload.selectedListId !== undefined && payload.selectedListId !== bookReadingListIdForSelectedBook.value) {
+        const previousListId = bookReadingListIdForSelectedBook.value
+        const nextListId = payload.selectedListId
+        if (previousListId && nextListId === null) {
+          await readingListService.removeBookFromReadingList(previousListId, payload.bookId)
+        } else if (previousListId && nextListId) {
+          await readingListService.moveBookBetweenReadingLists(payload.bookId, previousListId, nextListId)
+        } else if (nextListId) {
+          await readingListService.addBookToReadingList(nextListId, payload.bookId)
+        }
+        if (selectedBookForDetails.value) selectedBookForDetails.value.readingListId = nextListId
+        bookReadingListIdForSelectedBook.value = nextListId
+        changed = true
+        if (onBookMoved) await onBookMoved()
+      }
+      showBookDetailsDialog.value = false
+    } catch (error) {
+      console.error('Error saving book changes:', error)
+      saveError.value = changed
+        ? 'Some changes were saved, but the remaining changes or refresh failed. Please check and try again.'
+        : 'Could not save your changes. Please try again.'
+    } finally {
       try {
-        if (bookReadingListIdForSelectedBook.value) {
-          await readingListService.moveBookBetweenReadingLists(
-            payload.bookId,
-            bookReadingListIdForSelectedBook.value,
-            payload.selectedListId!,
-          )
-        } else {
-          await readingListService.addBookToReadingList(payload.selectedListId!, payload.bookId)
-        }
-
-        if (selectedBookForDetails.value) {
-          selectedBookForDetails.value.readingListId = payload.selectedListId!
-        }
-        bookReadingListIdForSelectedBook.value = payload.selectedListId!
-        changed = true
-
-        if (onBookMoved) {
-          await onBookMoved()
+        if (changed && selectedBookForDetails.value && onBookUpdatedInList) {
+          onBookUpdatedInList(selectedBookForDetails.value)
         }
       } catch (error) {
-        console.error('Error moving book:', error)
+        console.error('Error refreshing saved book changes:', error)
+        saveError.value = 'Changes were saved, but the display could not refresh. Please reopen the collection.'
+        showBookDetailsDialog.value = true
+      } finally {
+        saving.value = false
       }
     }
-
-    if (changed && selectedBookForDetails.value && onBookUpdatedInList) {
-      onBookUpdatedInList(selectedBookForDetails.value)
-    }
-
-    showBookDetailsDialog.value = false
   }
 
   return {
+    saving,
+    saveError,
     showBookDetailsDialog,
     selectedBookForDetails,
     userRatingForSelectedBook,

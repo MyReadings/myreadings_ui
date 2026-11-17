@@ -1,17 +1,18 @@
 <template>
   <v-dialog
     :model-value="modelValue"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="!saving && emit('update:modelValue', $event)"
+    :persistent="saving"
     :fullscreen="display.xs.value"
     max-width="800px"
   >
     <v-card v-if="book" class="d-flex flex-column h-100 book-details-card">
       <v-toolbar color="primary" dark v-if="display.xs.value">
-        <v-btn icon dark @click="handleClose">
+        <v-btn icon dark @click="handleClose" :disabled="saving">
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>{{ book.title }}</v-toolbar-title>
-        <v-btn icon dark @click="handleConfirm">
+        <v-btn icon dark @click="handleConfirm" :loading="saving" :disabled="saving">
           <v-icon>mdi-check</v-icon>
         </v-btn>
       </v-toolbar>
@@ -19,6 +20,8 @@
       <v-card-title v-else class="headline grey lighten-2" primary-title>
         Book details
       </v-card-title>
+
+      <v-alert v-if="saveError" type="error" class="ma-4" role="alert">{{ saveError }}</v-alert>
 
       <v-card-text class="flex-grow-1 book-details-content-scroll" v-if="display.xs.value">
         <v-container fluid>
@@ -52,6 +55,7 @@
               </div>
               <ReadingListSelectBox
                 :items="selectOptions"
+                :disabled="saving"
                 v-model="selectedReadingListId"
                 class="mb-4 w-75"
                 item-title="name"
@@ -61,6 +65,7 @@
                 <v-rating
                   :model-value="rating"
                   @update:model-value="handleRatingChange"
+                  :disabled="saving"
                   length="5"
                   size="32"
                   hover
@@ -100,6 +105,7 @@
               />
               <ReadingListSelectBox
                 :items="selectOptions"
+                :disabled="saving"
                 v-model="selectedReadingListId"
                 class="mb-4 w-100"
                 item-title="name"
@@ -110,6 +116,7 @@
                 <v-rating
                   :model-value="rating"
                   @update:model-value="handleRatingChange"
+                  :disabled="saving"
                   length="5"
                   size="32"
                   hover
@@ -156,8 +163,8 @@
 
       <v-card-actions v-if="!display.xs.value">
         <v-spacer />
-        <v-btn color="primary" variant="flat" @click="handleConfirm">Confirm</v-btn>
-        <v-btn color="primary" text @click="handleClose">Close</v-btn>
+        <v-btn color="primary" variant="flat" @click="handleConfirm" :loading="saving" :disabled="saving">Confirm</v-btn>
+        <v-btn color="primary" text @click="handleClose" :disabled="saving">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -173,6 +180,8 @@ import ReadingListSelectBox from './ReadingListSelectBox.vue'
 
 const props = defineProps({
   modelValue: Boolean,
+  saving: Boolean,
+  saveError: String,
   book: Object as () => Book | null,
   selectOptions: Array as () => ReadingList[],
   reviewStats: Object as () => ReviewStats | null,
@@ -245,10 +254,12 @@ const handleRatingChange = (val: string | number) => {
 }
 
 const handleClose = () => {
+  if (props.saving) return
   emit('update:modelValue', false)
 }
 
 const handleConfirm = () => {
+  if (props.saving) return
   if (!props.book) {
     emit('update:modelValue', false)
     return
@@ -262,8 +273,6 @@ const handleConfirm = () => {
         ? selectedReadingListId.value
         : undefined,
   })
-
-  emit('update:modelValue', false)
 }
 </script>
 

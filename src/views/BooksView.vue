@@ -133,7 +133,7 @@
       </v-col>
     </v-row>
 
-    <BookDialog :model-value="showBookDetailsDialog" @update:model-value="showBookDetailsDialog = $event"
+    <BookDialog :saving="saving" :save-error="saveError" :model-value="showBookDetailsDialog" @update:model-value="showBookDetailsDialog = $event"
       :book="selectedBookForDetails" :select-options="collections" :review-stats="selectedBookForDetails?.reviewStats"
       :user-rating="userRatingForSelectedBook" :book-reading-list-id="bookReadingListIdForSelectedBook"
       @confirm-changes="confirmBookDialogChanges" />
@@ -170,6 +170,8 @@ const viewingCollectionBooks = ref(false)
 const showCreateListDialog = ref(false)
 
 const {
+  saving,
+  saveError,
   showBookDetailsDialog,
   selectedBookForDetails,
   userRatingForSelectedBook,

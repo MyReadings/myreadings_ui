@@ -14,7 +14,8 @@
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "test": "node tests/useBookDialog.test.mjs"
   },
   "dependencies": {
     "@apollo/client": "^4.0.5",
@@ -55,6 +56,7 @@
     "typescript": "~5.8.0",
     "vite": "^6.2.1",
     "vite-plugin-vue-devtools": "^7.7.2",
-    "vue-tsc": "^2.2.8"
+    "vue-tsc": "^2.2.8",
+    "esbuild": "0.25.1"
   }
 }
