@@ -1,13 +1,14 @@
-FROM docker.io/library/node:18-alpine AS build
+FROM docker.io/library/node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build:docker
 
-FROM docker.io/library/node:18-alpine
+FROM docker.io/library/node:22-alpine
 WORKDIR /app
-RUN npm init -y && npm install express http-proxy-middleware
+COPY runtime/package*.json ./
+RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/dist ./public
 COPY server.js ./
 EXPOSE 8080

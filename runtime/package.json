@@ -1,0 +1,13 @@
+{
+  "name": "myreadings-ui-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "http-proxy-middleware": "4.2.2"
+  }
+}
