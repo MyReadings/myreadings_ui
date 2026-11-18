@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, getCurrentScope, onScopeDispose } from 'vue'
 import { reviewService, readingListService } from '@/services/serviceFactory'
 import type { Book, BookWithDetails } from '@/models/Book'
 import type { ReadingList } from '@/models/ReadingList'
@@ -10,6 +10,10 @@ export function useBookDialog() {
   const userRatingForSelectedBook = ref(0)
   const bookReadingListIdForSelectedBook = ref<string | null>(null)
   const readingLists = ref<ReadingList[]>([])
+  const loadError = ref('')
+  const loading = ref(false)
+  let loadGeneration = 0
+  if (getCurrentScope()) onScopeDispose(() => { loadGeneration++ })
   const saving = ref(false)
   const saveError = ref('')
   let readingListsLoaded = false
@@ -38,28 +42,33 @@ export function useBookDialog() {
   }
 
   const fetchAndOpenBookDialog = async (book: Book) => {
-    const [listInfo, stats, myReview, lists] = await Promise.all([
-      readingListService.getReadingListContainingBook(book.bookId),
-      reviewService.getReviewStats(book.bookId),
-      reviewService.getMyReviewForBook(book.bookId),
-      readingListsLoaded
-        ? readingLists.value
-        : readingListService.getMyReadingLists(),
-    ])
-
-    if (!readingListsLoaded) {
+    if (saving.value) return
+    const request = ++loadGeneration
+    loadError.value = ''
+    loading.value = true
+    showBookDetailsDialog.value = false
+    try {
+      const [listInfo, stats, myReview, lists] = await Promise.all([
+        readingListService.getReadingListContainingBook(book.bookId),
+        reviewService.getReviewStats(book.bookId),
+        reviewService.getMyReviewForBook(book.bookId),
+        readingListsLoaded ? readingLists.value : readingListService.getMyReadingLists(),
+      ])
+      if (request !== loadGeneration) return
       readingLists.value = lists
       readingListsLoaded = true
+      await openBookDialog(
+        book, stats, myReview?.rating ?? 0, myReview?.reviewId ?? null,
+        myReview?.reviewText ?? null, listInfo?.readingListId ?? null,
+      )
+    } catch (error) {
+      if (request === loadGeneration) {
+        console.error('Error loading book details:', error)
+        loadError.value = 'Could not load book details. Please select the book to try again.'
+      }
+    } finally {
+      if (request === loadGeneration) loading.value = false
     }
-
-    await openBookDialog(
-      book,
-      stats,
-      myReview?.rating ?? 0,
-      myReview?.reviewId ?? null,
-      myReview?.reviewText ?? null,
-      listInfo?.readingListId ?? null,
-    )
   }
 
   const handleConfirmChanges = async (
@@ -123,6 +132,8 @@ export function useBookDialog() {
   }
 
   return {
+    loadError,
+    loading,
     saving,
     saveError,
     showBookDetailsDialog,

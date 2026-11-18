@@ -1,6 +1,7 @@
 <template>
 
   <v-container fluid class="pa-4">
+    <v-alert v-if="collectionsError || booksError" type="error" variant="tonal" class="mb-4">{{ collectionsError || booksError }}</v-alert>
 
     <v-row v-if="!display.xs.value">
 
@@ -17,7 +18,7 @@
             <v-list-item-subtitle>{{ collection.description }}</v-list-item-subtitle>
           </v-list-item>
 
-          <v-list-item v-if="collections.length === 0 && !loadingCollections">
+          <v-list-item v-if="collections.length === 0 && !loadingCollections && !collectionsError">
             <v-list-item-title>No collections found.</v-list-item-title>
           </v-list-item>
 
@@ -98,7 +99,7 @@
             <v-divider v-if="index < collections.length - 1"></v-divider>
           </template>
 
-          <v-list-item v-if="collections.length === 0 && !loadingCollections">
+          <v-list-item v-if="collections.length === 0 && !loadingCollections && !collectionsError">
             <v-list-item-title>No collections found.</v-list-item-title>
           </v-list-item>
 
@@ -121,7 +122,7 @@
             <v-divider v-if="index < booksInCollection.length - 1"></v-divider>
           </template>
 
-          <v-list-item v-if="booksInCollection.length === 0 && !loadingBooks">
+          <v-list-item v-if="booksInCollection.length === 0 && !loadingBooks && !booksError">
             <v-list-item-title>No books in this collection.</v-list-item-title>
           </v-list-item>
 
@@ -138,7 +139,7 @@
       :user-rating="userRatingForSelectedBook" :book-reading-list-id="bookReadingListIdForSelectedBook"
       @confirm-changes="confirmBookDialogChanges" />
 
-    <CreateReadingListDialog :model-value="showCreateListDialog" @update:model-value="showCreateListDialog = $event"
+    <CreateReadingListDialog :saving="creatingList" :save-error="createListError" :model-value="showCreateListDialog" @update:model-value="showCreateListDialog = $event"
       @create-list="handleCreateList" />
 
   </v-container>
@@ -158,16 +159,17 @@ import BookDialog from '@/components/BookDialog.vue'
 import CreateReadingListDialog from '@/components/CreateReadingListDialog.vue'
 import { getCoverUrl } from '@/utils/coverUtils'
 import { bookService, readingListService } from '@/services/serviceFactory'
+import { useLatestData } from '@/composables/useLatestData'
 
 const display = useDisplay()
 
-const collections = ref<ReadingList[]>([])
+const { data: collections, loading: loadingCollections, error: collectionsError, load: loadCollections } = useLatestData<ReadingList[]>([])
 const selectedCollection = ref<ReadingList | null>(null)
-const booksInCollection = ref<BookWithDetails[]>([])
-const loadingCollections = ref(false)
-const loadingBooks = ref(false)
+const { data: booksInCollection, loading: loadingBooks, error: booksError, load: loadBooks, clear: clearBooks } = useLatestData<BookWithDetails[]>([])
 const viewingCollectionBooks = ref(false)
 const showCreateListDialog = ref(false)
+const creatingList = ref(false)
+const createListError = ref('')
 
 const {
   saving,
@@ -199,35 +201,19 @@ const mobileHeaderText = computed(() => {
     : 'My Collections'
 })
 
-const fetchCollections = async () => {
-  loadingCollections.value = true
-  try {
-    collections.value = await readingListService.getMyReadingLists()
-  } catch (error) {
-    console.error('Error fetching collections:', error)
-  } finally {
-    loadingCollections.value = false
-  }
+const fetchCollections = () => loadCollections(
+  () => readingListService.getMyReadingLists(), 'Could not load collections. Please reload to try again.',
+)
+
+const fetchBooksInCollection = (readingListId: string) => {
+  clearBooks()
+  return loadBooks(() => bookService.getBooksInReadingListWithDetails(readingListId), 'Could not load this collection. Please select it to try again.')
 }
 
-const fetchBooksInCollection = async (readingListId: string) => {
-  loadingBooks.value = true
-  booksInCollection.value = []
-  try {
-    booksInCollection.value = await bookService.getBooksInReadingListWithDetails(readingListId)
-  } catch (error) {
-    console.error(`Error fetching books for collection ${readingListId}:`, error)
-  } finally {
-    loadingBooks.value = false
-  }
-}
-
-const handleCollectionClick = async (collection: ReadingList, isMobile: boolean = false) => {
+const handleCollectionClick = (collection: ReadingList, isMobile: boolean = false) => {
   selectedCollection.value = collection
-  await fetchBooksInCollection(collection.readingListId)
-  if (isMobile) {
-    viewingCollectionBooks.value = true
-  }
+  if (isMobile) viewingCollectionBooks.value = true
+  return fetchBooksInCollection(collection.readingListId)
 }
 
 async function handleBookClick(book: BookWithDetails) {
@@ -263,12 +249,18 @@ const confirmBookDialogChanges = async (payload: {
 }
 
 const handleCreateList = async (listDetails: { name: string; description: string }) => {
+  if (creatingList.value) return
+  creatingList.value = true
+  createListError.value = ''
   try {
     await readingListService.createReadingList(listDetails)
     showCreateListDialog.value = false
     await fetchCollections()
   } catch (error) {
     console.error('Error creating list:', error)
+    createListError.value = 'Could not create the collection. Please try again.'
+  } finally {
+    creatingList.value = false
   }
 }
 

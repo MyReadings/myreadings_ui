@@ -16,8 +16,14 @@ const bundle = await build({
       export const calls=[];
       export const controls={};
       const invoke=(name,args)=>{calls.push(name);return controls[name](...args)};
-      export const reviewService={createOrUpdateReview:(...args)=>invoke('review',args)};
+      export const reviewService={
+        createOrUpdateReview:(...args)=>invoke('review',args),
+        getReviewStats:(...args)=>invoke('stats',args),
+        getMyReviewForBook:(...args)=>invoke('myReview',args)
+      };
       export const readingListService={
+        getReadingListContainingBook:(...args)=>invoke('containingList',args),
+        getMyReadingLists:(...args)=>invoke('lists',args),
         moveBookBetweenReadingLists:(...args)=>invoke('move',args),
         addBookToReadingList:(...args)=>invoke('add',args),
         removeBookFromReadingList:(...args)=>invoke('remove',args)
@@ -28,6 +34,8 @@ const { useBookDialog, calls, controls } = await import(`data:text/javascript;ba
 
 beforeEach(() => {
   calls.length = 0
+  controls.stats = controls.myReview = controls.containingList = async () => null
+  controls.lists = async () => []
   controls.review = async () => ({ reviewId: 'review-1' })
   controls.move = controls.add = controls.remove = async () => {}
 })
@@ -80,4 +88,25 @@ test('clearing the selected collection removes the book', async () => {
   await d.handleConfirmChanges({ bookId: 'book-1', selectedListId: null })
   assert.deepEqual(calls, ['remove'])
   assert.equal(d.bookReadingListIdForSelectedBook.value, null)
+})
+
+test('failed detail load stays closed and exposes a retryable error', async () => {
+  const d = useBookDialog()
+  controls.stats = async () => { throw Error('offline') }
+  await d.fetchAndOpenBookDialog({ bookId: 'book-1' })
+  assert.equal(d.showBookDetailsDialog.value, false)
+  assert.equal(d.loading.value, false)
+  assert.match(d.loadError.value, /Could not load/)
+})
+
+test('a slow earlier book cannot replace the latest selection', async () => {
+  const d = useBookDialog()
+  let finish
+  controls.stats = (id) => id === 'old' ? new Promise(resolve => { finish = resolve }) : Promise.resolve(null)
+  const old = d.fetchAndOpenBookDialog({ bookId: 'old' })
+  await d.fetchAndOpenBookDialog({ bookId: 'new' })
+  finish(null)
+  await old
+  assert.equal(d.selectedBookForDetails.value.bookId, 'new')
+  assert.equal(d.showBookDetailsDialog.value, true)
 })

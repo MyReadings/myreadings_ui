@@ -1,4 +1,7 @@
 <template>
+  <v-progress-linear v-if="loadingDetails" indeterminate color="primary" />
+  <v-alert v-if="homeError || loadError" type="error" variant="tonal" class="ma-4">{{ homeError || loadError }}</v-alert>
+  <v-progress-linear v-if="loadingHome" indeterminate color="primary" />
   <div class="new-releases">
     <h3>New Releases</h3>
     <p>Newly released books spanning various genres.</p>
@@ -52,10 +55,14 @@ import { getCoverUrl } from '@/utils/coverUtils'
 import { useBookDialog } from '@/composables/useBookDialog'
 import { bookService } from '@/services/serviceFactory'
 
+const homeError = ref('')
+const loadingHome = ref(false)
 const recentBooks = ref<Book[]>([])
 const recommendedBooks = ref<Book[]>([])
 
 const {
+  loading: loadingDetails,
+  loadError,
   saving,
   saveError,
   showBookDetailsDialog,
@@ -76,6 +83,7 @@ const swiperBreakpoints = {
 }
 
 onMounted(async () => {
+  loadingHome.value = true
   try {
     const [recent, recommended] = await Promise.all([
       bookService.getNewReleases(10),
@@ -85,6 +93,9 @@ onMounted(async () => {
     recommendedBooks.value = recommended
   } catch (error) {
     console.error('Error fetching initial data for Home:', error)
+    homeError.value = 'Could not load books. Please reload to try again.'
+  } finally {
+    loadingHome.value = false
   }
 })
 </script>

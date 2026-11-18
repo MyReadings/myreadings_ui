@@ -15,6 +15,9 @@
       </v-col>
     </v-row>
 
+    <v-progress-linear v-if="loadingDetails" indeterminate color="primary" />
+    <v-alert v-if="loadError || searchError" type="error" variant="tonal" class="mb-4">{{ loadError || searchError }}</v-alert>
+
     <v-row v-if="loadingResults" class="justify-center">
       <v-col cols="12" class="text-center">
         <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
@@ -22,7 +25,7 @@
       </v-col>
     </v-row>
 
-    <v-row v-else-if="searchResults.length === 0 && hasSearched">
+    <v-row v-else-if="searchResults.length === 0 && hasSearched && !searchError">
       <v-col cols="12" class="text-center">
         <v-alert type="info" variant="tonal" class="mx-auto" max-width="400">
           No books found matching your search.
@@ -106,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { Book } from '@/models/Book'
 import BookCard from '@/components/BookCard.vue'
@@ -114,20 +117,22 @@ import BookDialog from '@/components/BookDialog.vue'
 import { useBookDialog } from '@/composables/useBookDialog'
 import { getCoverUrl } from '@/utils/coverUtils'
 import { bookService } from '@/services/serviceFactory'
+import { useLatestData } from '@/composables/useLatestData'
 
 const display = useDisplay()
 
 const searchQuery = ref('')
-const searchResults = ref<Book[]>([])
-const loadingResults = ref(false)
+const { data: results, loading: loadingResults, error: searchError, load, clear } = useLatestData<Awaited<ReturnType<typeof bookService.searchBooks>> | null>(null)
+const searchResults = computed(() => results.value?.content ?? [])
 const hasSearched = ref(false)
 
 const currentPage = ref(1)
 const pageSize = 12
-const totalResults = ref(0)
-const totalPages = ref(0)
+const totalPages = computed(() => results.value?.totalPages ?? 0)
 
 const {
+  loading: loadingDetails,
+  loadError,
   saving,
   saveError,
   showBookDetailsDialog,
@@ -140,32 +145,14 @@ const {
 } = useBookDialog()
 
 const performSearch = async () => {
-  if (!searchQuery.value.trim()) {
-    searchResults.value = []
-    hasSearched.value = false
-    totalResults.value = 0
-    totalPages.value = 0
+  const query = (searchQuery.value ?? '').trim()
+  if (!query) {
+    clearSearch()
     return
   }
-  loadingResults.value = true
   hasSearched.value = true
-  try {
-    const response = await bookService.searchBooks(
-      searchQuery.value,
-      currentPage.value - 1,
-      pageSize,
-    )
-    totalResults.value = response.totalElements || 0
-    totalPages.value = response.totalPages || 0
-    searchResults.value = response.content || [] // This is correct (assigns Book[])
-  } catch (error) {
-    console.error('Error fetching search results:', error)
-    searchResults.value = []
-    totalResults.value = 0
-    totalPages.value = 0
-  } finally {
-    loadingResults.value = false
-  }
+  const page = currentPage.value - 1
+  await load(() => bookService.searchBooks(query, page, pageSize), 'Could not load search results. Please try again.')
 }
 
 const onPageChange = (newPage: number) => {
@@ -175,18 +162,18 @@ const onPageChange = (newPage: number) => {
 
 const clearSearch = () => {
   searchQuery.value = ''
-  searchResults.value = []
   hasSearched.value = false
   currentPage.value = 1
-  totalResults.value = 0
-  totalPages.value = 0
+  clear()
 }
 
 watch(searchQuery, (newQuery, oldQuery) => {
-  if (newQuery.trim() !== oldQuery.trim()) {
+  if ((newQuery ?? '').trim() !== (oldQuery ?? '').trim()) {
     currentPage.value = 1
+    hasSearched.value = false
+    clear()
   }
-})
+}, { flush: 'sync' })
 </script>
 <style scoped>
 .v-text-field {

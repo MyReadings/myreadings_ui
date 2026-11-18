@@ -68,4 +68,15 @@ const initApp = async () => {
   app.mount('#app')
 }
 
-initApp()
+initApp().catch((error) => {
+  console.error('Application startup failed:', error)
+  const root = document.getElementById('app')
+  if (!root) return
+  const message = document.createElement('p')
+  message.setAttribute('role', 'alert')
+  message.textContent = 'Could not start MyReadings. Check your connection and try again.'
+  const retry = document.createElement('button')
+  retry.textContent = 'Try again'
+  retry.addEventListener('click', () => window.location.reload())
+  root.replaceChildren(message, retry)
+})

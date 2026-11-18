@@ -15,7 +15,7 @@
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
     "format": "prettier --write src/",
-    "test": "node tests/useBookDialog.test.mjs"
+    "test": "node tests/useBookDialog.test.mjs && node tests/useLatestData.test.mjs"
   },
   "dependencies": {
     "@apollo/client": "^4.0.5",
