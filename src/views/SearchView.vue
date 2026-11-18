@@ -61,7 +61,7 @@
           <template v-for="(book, index) in searchResults" :key="book.bookId">
             <v-list-item @click="fetchAndOpenBookDialog(book)" link>
               <template v-slot:prepend>
-                <v-img
+                <BookCover
                   :src="getCoverUrl(book, 'M')"
                   :alt="book.title"
                   width="60"
@@ -69,7 +69,7 @@
                   aspect-ratio="2/3"
                   contain
                   class="rounded mr-4"
-                ></v-img>
+                ></BookCover>
               </template>
               <v-list-item>
                 <v-list-item-title class="font-weight-bold">{{ book.title }}</v-list-item-title>
@@ -109,6 +109,7 @@
 </template>
 
 <script setup lang="ts">
+import BookCover from '@/components/BookCover.vue'
 import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { Book } from '@/models/Book'

@@ -27,7 +27,7 @@
         <v-container fluid>
           <v-row>
             <v-col cols="12" class="d-flex flex-column align-center">
-              <v-img
+              <BookCover
                 :src="coverUrl"
                 :alt="book.title"
                 aspect-ratio="2/3"
@@ -96,7 +96,7 @@
         <v-container fluid>
           <v-row>
             <v-col cols="12" md="5" class="d-flex flex-column align-center">
-              <v-img
+              <BookCover
                 :src="coverUrl"
                 :alt="book.title"
                 aspect-ratio="2/3"
@@ -171,6 +171,7 @@
 </template>
 
 <script setup lang="ts">
+import BookCover from '@/components/BookCover.vue'
 import { ref, watch, computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { Book } from '@/models/Book'

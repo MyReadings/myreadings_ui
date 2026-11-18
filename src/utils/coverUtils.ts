@@ -1,13 +1,12 @@
 import type { Book } from '@/models/Book'
+import placeholder from '@/assets/no-cover.svg'
 
 export function getCoverUrl(book: Book, size: 'S' | 'M' | 'L'): string {
   if (book.isbn) {
-    return `https://covers.openlibrary.org/b/isbn/${book.isbn}-${size}.jpg`
+    return `https://covers.openlibrary.org/b/isbn/${encodeURIComponent(book.isbn)}-${size}.jpg?default=false`
   } else if (book.coverImageId) {
-    return `https://covers.openlibrary.org/b/id/${book.coverImageId}-${size}.jpg`
+    return `https://covers.openlibrary.org/b/id/${encodeURIComponent(book.coverImageId)}-${size}.jpg?default=false`
   }
 
-  const placeholderWidth = size === 'S' ? 60 : size === 'M' ? 100 : 300
-  const placeholderHeight = size === 'S' ? 90 : size === 'M' ? 150 : 450
-  return `https://placehold.co/${placeholderWidth}x${placeholderHeight}/EEEEEE/AAAAAA?text=No+Cover`
+  return placeholder
 }

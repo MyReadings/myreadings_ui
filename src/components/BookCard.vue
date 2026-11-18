@@ -1,12 +1,12 @@
 <template>
   <v-card class="ma-3 book-card-custom" elevation="4" @click="$emit('bookCardClicked')">
-    <v-img :src="coverUrl" :aspect-ratio="2 / 3" cover class="rounded-t book-cover-img">
+    <BookCover :src="coverUrl" :aspect-ratio="2 / 3" cover class="rounded-t book-cover-img">
       <template #default>
         <v-chip class="ma-2 book-genre-chip" color="yellow-darken-2" size="small" label>
           {{ genre }}
         </v-chip>
       </template>
-    </v-img>
+    </BookCover>
 
     <v-card-text class="px-3 pb-2 book-card-content">
       <div class="font-weight-bold book-title">
@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import BookCover from '@/components/BookCover.vue'
 defineProps({
   genre: String,
   coverUrl: String,

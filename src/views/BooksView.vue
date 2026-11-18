@@ -43,8 +43,8 @@
           :loading="loadingBooks" no-data-text="No books in this collection.">
 
           <template v-slot:item.cover="{ item }">
-            <v-img :src="getCoverUrl(item, 'M')" :alt="item.title" width="50" height="75" aspect-ratio="2/3" contain
-              class="my-2 rounded"></v-img>
+            <BookCover :src="getCoverUrl(item, 'M')" :alt="item.title" width="50" height="75" aspect-ratio="2/3" contain
+              class="my-2 rounded"></BookCover>
           </template>
 
           <template v-slot:item.title="{ item }">
@@ -113,8 +113,8 @@
           <template v-for="(book, index) in booksInCollection" :key="book.bookId">
             <v-list-item @click="handleBookClick(book)" link>
               <template v-slot:prepend>
-                <v-img :src="getCoverUrl(book, 'M')" :alt="book.title" width="60" height="90" aspect-ratio="2/3" contain
-                  class="rounded mr-2"></v-img>
+                <BookCover :src="getCoverUrl(book, 'M')" :alt="book.title" width="60" height="90" aspect-ratio="2/3" contain
+                  class="rounded mr-2"></BookCover>
               </template>
               <v-list-item-title>{{ book.title }}</v-list-item-title>
               <v-list-item-subtitle>{{ book.publisher || 'N/A' }}</v-list-item-subtitle>
@@ -149,6 +149,7 @@
 
 
 <script setup lang="ts">
+import BookCover from '@/components/BookCover.vue'
 
 import { ref, onMounted, computed } from 'vue'
 import { useDisplay } from 'vuetify'
