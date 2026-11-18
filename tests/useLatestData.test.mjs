@@ -2,8 +2,8 @@ import { build } from 'esbuild'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-const bundle = await build({ entryPoints: ['src/composables/useLatestData.ts'], bundle: true, write: false, platform: 'node', format: 'esm' })
-const { useLatestData } = await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`)
+const bundle = await build({ stdin: { contents: "export { useLatestData } from './src/composables/useLatestData.ts'; export { watchEffect, nextTick } from 'vue';", resolveDir: process.cwd() }, bundle: true, write: false, platform: 'node', format: 'esm' })
+const { useLatestData, watchEffect, nextTick } = await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`)
 const deferred = () => {
   let resolve, reject
   const promise = new Promise((yes, no) => { resolve = yes; reject = no })
@@ -55,4 +55,16 @@ test('current failure shows an error and a successful retry clears it', async ()
   await resource.load(async () => ['recovered'], 'error')
   assert.equal(resource.error.value, '')
   assert.deepEqual(resource.data.value, ['recovered'])
+})
+
+test('saved edits to loaded book details remain reactive for the view', async () => {
+  const resource = useLatestData([])
+  await resource.load(async () => [{ userRating: 1 }], 'error')
+  let displayedRating
+  const stop = watchEffect(() => { displayedRating = resource.data.value[0].userRating })
+  try {
+    Object.assign(resource.data.value[0], { userRating: 4 })
+    await nextTick()
+    assert.equal(displayedRating, 4)
+  } finally { stop() }
 })

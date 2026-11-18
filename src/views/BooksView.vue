@@ -40,7 +40,7 @@
         <h2 class="text-h6 mb-4">{{ desktopHeaderText }}</h2>
 
         <v-data-table :headers="desktopHeaders" :items="booksInCollection" item-value="bookId" class="elevation-0"
-          :loading="loadingBooks" no-data-text="No books in this collection.">
+          :loading="loadingBooks" :no-data-text="booksError ? 'Books could not be loaded.' : 'No books in this collection.'">
 
           <template v-slot:item.cover="{ item }">
             <BookCover :src="getCoverUrl(item, 'M')" :alt="item.title" width="50" height="75" aspect-ratio="2/3" contain

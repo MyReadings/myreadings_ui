@@ -1,8 +1,8 @@
-import { getCurrentScope, onScopeDispose, ref, shallowRef } from 'vue'
+import { getCurrentScope, onScopeDispose, ref, type Ref } from 'vue'
 
 // Only the latest selection may update the screen, including its loading/error state.
 export function useLatestData<T>(initial: T) {
-  const data = shallowRef<T>(initial)
+  const data = ref(initial) as Ref<T>
   const loading = ref(false)
   const error = ref('')
   let generation = 0
