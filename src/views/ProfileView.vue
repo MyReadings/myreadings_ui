@@ -162,7 +162,7 @@ const fetchRecentReviews = async () => {
   loadingReviews.value = true
   errorFetchingReviews.value = false
   try {
-    const reviewsData = await reviewService.getReviewsByUser(currentUserId.value)
+    const reviewsData = await reviewService.getReviewsByUser(currentUserId.value, 0, 5)
     
     const sortedReviews = [...reviewsData].sort(
       (a, b) => new Date(b.publicationDate).getTime() - new Date(a.publicationDate).getTime()

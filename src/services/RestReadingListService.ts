@@ -1,11 +1,11 @@
 import type { IReadingListService } from './IReadingListService'
 import type { ReadingList, ReadingListInput } from '@/models/ReadingList'
 import axiosInstance from '@/utils/axiosInstance'
+import { fetchAllPages } from './pagination'
 
 export class RestReadingListService implements IReadingListService {
   public async getMyReadingLists(): Promise<ReadingList[]> {
-    const response = await axiosInstance.get('/api/v1/readinglists')
-    return response.data ?? []
+    return fetchAllPages<ReadingList>((page, size) => axiosInstance.get('/api/v1/readinglists', { params: { page, size } }))
   }
 
   public async getReadingListContainingBook(bookId: string): Promise<ReadingList | null> {

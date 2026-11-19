@@ -1,6 +1,7 @@
 import type { IReviewService } from './IReviewService'
 import type { Review, ReviewStats } from '@/models/Review'
 import axiosInstance from '@/utils/axiosInstance'
+import { fetchIdBatches } from './pagination'
 
 export class RestReviewService implements IReviewService {
   public async getReviewStats(bookId: string): Promise<ReviewStats | null> {
@@ -28,17 +29,15 @@ export class RestReviewService implements IReviewService {
   }
 
   public async getReviewStatsBatch(bookIds: string[]): Promise<ReviewStats[]> {
-    const response = await axiosInstance.post('/api/v1/reviews/books/batch/stats', bookIds)
-    return response.data ?? []
+    return fetchIdBatches<ReviewStats>(bookIds, async ids => (await axiosInstance.post('/api/v1/reviews/books/batch/stats', ids)).data ?? [])
   }
 
   public async getMyReviewsForBooks(bookIds: string[]): Promise<Review[]> {
-    const response = await axiosInstance.post('/api/v1/reviews/books/batch/my-reviews', bookIds)
-    return response.data ?? []
+    return fetchIdBatches<Review>(bookIds, async ids => (await axiosInstance.post('/api/v1/reviews/books/batch/my-reviews', ids)).data ?? [])
   }
 
-  public async getReviewsByUser(userId: string): Promise<Review[]> {
-    const response = await axiosInstance.get(`/api/v1/reviews/users/${userId}`)
+  public async getReviewsByUser(userId: string, page = 0, size = 5): Promise<Review[]> {
+    const response = await axiosInstance.get(`/api/v1/reviews/users/${userId}`, { params: { page, size } })
     return response.data ?? []
   }
 

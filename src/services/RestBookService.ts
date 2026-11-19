@@ -2,6 +2,7 @@ import type { IBookService } from './IBookService'
 import type { Book, PagedResponse, BookWithDetails } from '@/models/Book'
 import type { IReviewService } from './IReviewService'
 import axiosInstance from '@/utils/axiosInstance'
+import { fetchAllPages, fetchIdBatches } from './pagination'
 
 export class RestBookService implements IBookService {
   public constructor(private reviewService: IReviewService) {}
@@ -20,8 +21,7 @@ export class RestBookService implements IBookService {
   
   public async getBooksByIds(bookIds: string[]): Promise<Book[]> {
     if (bookIds.length === 0) return []
-    const response = await axiosInstance.post('/api/v1/books/batch', bookIds)
-    return response.data ?? []
+    return fetchIdBatches<Book>(bookIds, async ids => (await axiosInstance.post('/api/v1/books/batch', ids)).data ?? [])
   }
 
   public async getNewReleases(limit: number): Promise<Book[]> {
@@ -46,8 +46,7 @@ export class RestBookService implements IBookService {
   public async getBooksInReadingListWithDetails(
     readingListId: string,
   ): Promise<BookWithDetails[]> {
-    const booksResponse = await axiosInstance.get(`/api/v1/readinglists/${readingListId}/books`)
-    const booksData: Book[] = booksResponse.data ?? []
+    const booksData = await fetchAllPages<Book>((page, size) => axiosInstance.get(`/api/v1/readinglists/${readingListId}/books`, { params: { page, size } }))
     if (booksData.length === 0) return []
 
     const bookIds = booksData.map((b) => b.bookId)

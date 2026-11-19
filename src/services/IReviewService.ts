@@ -5,6 +5,6 @@ export interface IReviewService {
   getMyReviewForBook(bookId: string): Promise<Review | null>
   getReviewStatsBatch(bookIds: string[]): Promise<ReviewStats[]>
   getMyReviewsForBooks(bookIds: string[]): Promise<Review[]>
-  getReviewsByUser(userId: string): Promise<Review[]>
+  getReviewsByUser(userId: string, page?: number, size?: number): Promise<Review[]>
   createOrUpdateReview(details: ReviewInput): Promise<Review>
 }
