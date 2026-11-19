@@ -21,9 +21,9 @@ import { ref } from 'vue'
 const selected = ref(0)
 
 const menuItems = [
-  { icon: 'mdi-home-outline', text: 'Home', path: '/' },
-  { icon: 'mdi-book-open-outline', text: 'Collections', path: '/collections' },
-  { icon: 'mdi-magnify', text: 'Search', path: '/search' },
-  { icon: 'mdi-account-outline', text: 'Profile', path: '/profile' },
+  { icon: '$homeOutline', text: 'Home', path: '/' },
+  { icon: '$bookOpenOutline', text: 'Collections', path: '/collections' },
+  { icon: '$magnify', text: 'Search', path: '/search' },
+  { icon: '$accountOutline', text: 'Profile', path: '/profile' },
 ]
 </script>

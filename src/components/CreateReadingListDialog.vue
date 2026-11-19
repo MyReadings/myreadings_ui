@@ -29,6 +29,9 @@
 </template>
 
 <script setup lang="ts">
+import { VTextarea } from 'vuetify/components'
+import { VTextField } from 'vuetify/components'
+import { VDialog } from 'vuetify/components'
 import { ref } from 'vue'
 
 const props = defineProps({

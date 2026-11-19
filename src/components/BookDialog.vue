@@ -9,11 +9,11 @@
     <v-card v-if="book" class="d-flex flex-column h-100 book-details-card">
       <v-toolbar color="primary" dark v-if="display.xs.value">
         <v-btn icon dark @click="handleClose" :disabled="saving">
-          <v-icon>mdi-close</v-icon>
+          <v-icon>$close</v-icon>
         </v-btn>
         <v-toolbar-title>{{ book.title }}</v-toolbar-title>
         <v-btn icon dark @click="handleConfirm" :loading="saving" :disabled="saving">
-          <v-icon>mdi-check</v-icon>
+          <v-icon>$complete</v-icon>
         </v-btn>
       </v-toolbar>
 
@@ -171,7 +171,10 @@
 </template>
 
 <script setup lang="ts">
+import { VDialog } from 'vuetify/components'
+import { VRating } from 'vuetify/components'
 import BookCover from '@/components/BookCover.vue'
+import { getCoverUrl } from '@/utils/coverUtils'
 import { ref, watch, computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { Book } from '@/models/Book'
@@ -228,14 +231,7 @@ watch(
   { immediate: true },
 )
 
-const coverUrl = computed(() => {
-  if (props.book?.isbn) {
-    return `https://covers.openlibrary.org/b/isbn/${props.book.isbn}-L.jpg`
-  } else if (props.book?.coverImageId) {
-    return `https://covers.openlibrary.org/b/id/${props.book.coverImageId}-L.jpg`
-  }
-  return 'https://via.placeholder.com/300x450.png?text=No+Cover'
-})
+const coverUrl = computed(() => props.book ? getCoverUrl(props.book, 'L') : '')
 
 const formattedPublicationDate = computed(() => {
   if (!props.book?.publicationDate) return 'N/A'

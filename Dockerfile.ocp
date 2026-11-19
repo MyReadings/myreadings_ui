@@ -10,7 +10,7 @@ WORKDIR /app
 COPY runtime/package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/dist ./public
-COPY server.js ./
+COPY server.js cover-cache.cjs ./
 EXPOSE 8080
 USER 1001
 CMD ["node", "server.js"]

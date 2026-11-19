@@ -1,7 +1,7 @@
 <template>
   <div class="splash-screen">
     <div class="splash-content">
-      <v-icon class="book-icon" size="100" color="primary">mdi-book-open-variant</v-icon>
+      <v-icon class="book-icon" size="100" color="primary">$bookOpenVariant</v-icon>
       <h1 class="app-title text-h4 text-primary font-weight-bold mt-4">my readings</h1>
     </div>
   </div>

@@ -5,7 +5,7 @@
         <v-text-field
           v-model="searchQuery"
           label="Search for books..."
-          append-inner-icon="mdi-magnify"
+          append-inner-icon="$magnify"
           variant="outlined"
           clearable
           @click:append-inner="performSearch"
@@ -109,6 +109,8 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
+import { VTextField } from 'vuetify/components'
 import BookCover from '@/components/BookCover.vue'
 import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'

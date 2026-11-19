@@ -10,6 +10,7 @@ function get(key: string): string {
 
 export const config = {
   apiUrl: get('VITE_API_URL'),
+  coverBaseUrl: get('VITE_COVER_BASE_URL') || 'https://covers.openlibrary.org/b',
   keycloakUrl: get('VITE_VUE_APP_KEYCLOAK_URL'),
   keycloakRealm: get('VITE_VUE_APP_KEYCLOAK_REALM'),
   keycloakClientId: get('VITE_VUE_APP_KEYCLOAK_CLIENT_ID'),

@@ -30,7 +30,7 @@
         </v-list>
 
         <v-btn color="primary" variant="tonal" block class="mt-4" @click="showCreateListDialog = true">
-          <v-icon left>mdi-plus</v-icon>
+          <v-icon left>$plus</v-icon>
           Create New List
         </v-btn>
 
@@ -74,14 +74,14 @@
             viewingCollectionBooks = false;
           selectedCollection = null;
           ">
-            <v-icon>mdi-arrow-left</v-icon>
+            <v-icon>$arrowLeft</v-icon>
           </v-btn>
           <h2 class="text-h6">{{ mobileHeaderText }}</h2>
         </div>
 
         <v-btn v-if="!viewingCollectionBooks" color="primary" variant="tonal" block class="mt-4 mb-4"
           @click="showCreateListDialog = true">
-          <v-icon left>mdi-plus</v-icon>
+          <v-icon left>$plus</v-icon>
           Create New List
         </v-btn>
 
@@ -90,7 +90,7 @@
             <v-list-item @click="handleCollectionClick(collection, true)" link>
               <template v-slot:prepend>
                 <v-avatar color="grey-lighten-2">
-                  <v-icon>mdi-bookshelf</v-icon>
+                  <v-icon>$bookshelf</v-icon>
                 </v-avatar>
               </template>
               <v-list-item-title>{{ collection.name }}</v-list-item-title>
@@ -149,10 +149,12 @@
 
 
 <script setup lang="ts">
+import { VRating } from 'vuetify/components'
 import BookCover from '@/components/BookCover.vue'
 
 import { ref, onMounted, computed } from 'vue'
 import { useDisplay } from 'vuetify'
+import { VDataTable } from 'vuetify/components'
 import type { BookWithDetails } from '@/models/Book'
 import type { ReadingList } from '@/models/ReadingList'
 import { useBookDialog } from '@/composables/useBookDialog'

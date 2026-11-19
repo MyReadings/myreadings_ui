@@ -111,6 +111,7 @@
 </template>
 
 <script setup lang="ts">
+import { VRating } from 'vuetify/components'
 import { ref, onMounted, computed } from 'vue'
 import { useKeycloak } from '@josempgon/vue-keycloak'
 import type { User } from '@/models/User'

@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSelect } from 'vuetify/components'
 import { ref, watch } from 'vue'
 import type { ReadingList } from '@/models/ReadingList'
 

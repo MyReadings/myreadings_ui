@@ -28,6 +28,7 @@ test('proxy serves the app and forwards each microservice and OTLP path', async 
     env.PORT = String(reservation.address().port)
     await new Promise(resolve => reservation.close(resolve))
     await copyFile('server.js', join(directory, 'server.js'))
+    await copyFile('cover-cache.cjs', join(directory, 'cover-cache.cjs'))
     await copyFile('runtime/package.json', join(directory, 'package.json'))
     await symlink(resolve('runtime/node_modules'), join(directory, 'node_modules'))
     await mkdir(join(directory, 'public'))
@@ -63,6 +64,7 @@ test('proxy serves the app and forwards each microservice and OTLP path', async 
     })
     const context = { window: {} }
     vm.runInNewContext(script, context)
+    assert.equal(context.window.__APP_CONFIG__.VITE_COVER_BASE_URL, '/covers')
     assert.equal(context.window.__APP_CONFIG__.VITE_VUE_APP_KEYCLOAK_URL, 'https://demo-keycloak.apps.example.test/')
   } finally {
     if (child && child.exitCode === null) {

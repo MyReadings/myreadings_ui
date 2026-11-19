@@ -7,11 +7,11 @@ initTracing(config.otelEndpoint)
 
 import 'vuetify/styles'
 import { createVuetify, type ThemeDefinition } from 'vuetify'
-import { VAlert, VApp, VAppBar, VAppBarTitle, VAvatar, VBottomNavigation, VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VDataTable, VDialog, VDivider, VIcon, VImg, VLayout, VList, VListItem, VListItemSubtitle, VListItemTitle, VMain, VPagination, VProgressCircular, VProgressLinear, VRating, VRow, VSelect, VSpacer, VTextField, VTextarea, VToolbar, VToolbarTitle } from 'vuetify/components'
-const components = { VAlert, VApp, VAppBar, VAppBarTitle, VAvatar, VBottomNavigation, VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VDataTable, VDialog, VDivider, VIcon, VImg, VLayout, VList, VListItem, VListItemSubtitle, VListItemTitle, VMain, VPagination, VProgressCircular, VProgressLinear, VRating, VRow, VSelect, VSpacer, VTextField, VTextarea, VToolbar, VToolbarTitle }
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
-import '@mdi/font/css/materialdesignicons.css'
-import { register } from 'swiper/element/bundle'
+import { VAlert, VApp, VAppBar, VAppBarTitle, VAvatar, VBottomNavigation, VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VDivider, VIcon, VImg, VLayout, VList, VListItem, VListItemSubtitle, VListItemTitle, VMain, VProgressCircular, VProgressLinear, VRow, VSpacer, VToolbar, VToolbarTitle } from 'vuetify/components'
+const components = { VAlert, VApp, VAppBar, VAppBarTitle, VAvatar, VBottomNavigation, VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VDivider, VIcon, VImg, VLayout, VList, VListItem, VListItemSubtitle, VListItemTitle, VMain, VProgressCircular, VProgressLinear, VRow, VSpacer, VToolbar, VToolbarTitle }
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
+import { mdiAccountOutline, mdiArrowLeft, mdiBookOpenOutline, mdiBookOpenVariant, mdiBookshelf, mdiHomeOutline, mdiMagnify, mdiPlus } from '@mdi/js'
+import { register } from 'swiper/element'
 
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -52,7 +52,7 @@ const initApp = async () => {
     },
     icons: {
       defaultSet: 'mdi',
-      aliases,
+      aliases: { ...aliases, homeOutline: mdiHomeOutline, accountOutline: mdiAccountOutline, bookOpenOutline: mdiBookOpenOutline, bookOpenVariant: mdiBookOpenVariant, bookshelf: mdiBookshelf, magnify: mdiMagnify, plus: mdiPlus, arrowLeft: mdiArrowLeft },
       sets: {
         mdi,
       },

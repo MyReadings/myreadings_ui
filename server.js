@@ -1,6 +1,7 @@
 const express = require('express')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const path = require('path')
+const { createCoverCache } = require('./cover-cache.cjs')
 
 const PORT = process.env.PORT || 8080
 const NAMESPACE = process.env.NAMESPACE || 'myreadings-dev'
@@ -20,6 +21,17 @@ app.get('/healthz', (_req, res) => {
   res.status(200).json({ status: 'UP' })
 })
 
+const getCover = createCoverCache()
+app.get(/^\/covers\/(isbn|id)\/([0-9Xx-]{1,20})-(S|M|L)\.jpg$/, async (req, res) => {
+  try {
+    const cover = await getCover(req.params[0], req.params[1], req.params[2])
+    res.set('Cache-Control', 'public, max-age=86400').type(cover.type).send(cover.body)
+  } catch {
+    // BookCover renders the bundled placeholder; artwork failure is not an API error.
+    res.set('Cache-Control', 'public, max-age=30').sendStatus(404)
+  }
+})
+
 app.get('/config.js', (req, res) => {
   const host = req.headers.host || ''
   const appsIdx = host.indexOf('.apps.')
@@ -31,6 +43,7 @@ app.get('/config.js', (req, res) => {
   res.type('application/javascript')
   res.send(`window.__APP_CONFIG__ = {
   VITE_API_URL: "/",
+  VITE_COVER_BASE_URL: "/covers",
   VITE_VUE_APP_KEYCLOAK_URL: "${keycloakUrl}",
   VITE_VUE_APP_KEYCLOAK_REALM: "${KC_REALM}",
   VITE_VUE_APP_KEYCLOAK_CLIENT_ID: "${KC_CLIENT_ID}"
