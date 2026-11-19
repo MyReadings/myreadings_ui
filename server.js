@@ -21,6 +21,9 @@ app.get('/healthz', (_req, res) => {
   res.status(200).json({ status: 'UP' })
 })
 
+// Internal APIs are for authenticated backend calls, never public proxy routes.
+app.use('/api/internal', (_req, res) => res.sendStatus(404))
+
 const getCover = createCoverCache()
 app.get(/^\/covers\/(isbn|id)\/([0-9Xx-]{1,20})-(S|M|L)\.jpg$/, async (req, res) => {
   try {

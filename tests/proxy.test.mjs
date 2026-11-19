@@ -51,6 +51,8 @@ test('proxy serves the app and forwards each microservice and OTLP path', async 
       const result = await (await fetch(`${base}/api/v1/${path}?page=1`, { headers: { authorization: 'Bearer demo-token' } })).json()
       assert.deepEqual(result, { service, path: `/api/v1/${path}?page=1`, authorization: 'Bearer demo-token' })
     }
+    assert.equal((await fetch(`${base}/api/internal/users/batch`, { method: 'POST', body: '[]' })).status, 404)
+    assert.equal((await fetch(`${base}/api/internal/books/demo`)).status, 404)
     const otlp = await (await fetch(`${base}/otlp/v1/traces`, { method: 'POST', body: '{}' })).json()
     assert.equal(otlp.service, 'OTEL_COLLECTOR')
     assert.equal(otlp.path, '/v1/traces')
