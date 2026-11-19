@@ -13,7 +13,8 @@ test('proxy serves the app and forwards each microservice and OTLP path', async 
   const backends = []
   let child
   try {
-    const env = { ...process.env, KEYCLOAK_REALM: 'my-readings', KC_ROUTE_NAME: 'demo-keycloak' }
+    const realm = 'demo\";throw new Error(\"unsafe config\");//'
+    const env = { ...process.env, KEYCLOAK_REALM: realm, KC_ROUTE_NAME: 'demo-keycloak' }
     for (const name of ['USER', 'CATALOG', 'READINGLIST', 'REVIEW', 'APP', 'OTEL_COLLECTOR']) {
       const server = createServer((req, res) => {
         res.setHeader('content-type', 'application/json')
@@ -67,6 +68,7 @@ test('proxy serves the app and forwards each microservice and OTLP path', async 
     const context = { window: {} }
     vm.runInNewContext(script, context)
     assert.equal(context.window.__APP_CONFIG__.VITE_COVER_BASE_URL, '/covers')
+    assert.equal(context.window.__APP_CONFIG__.VITE_VUE_APP_KEYCLOAK_REALM, realm)
     assert.equal(context.window.__APP_CONFIG__.VITE_VUE_APP_KEYCLOAK_URL, 'https://demo-keycloak.apps.example.test/')
   } finally {
     if (child && child.exitCode === null) {

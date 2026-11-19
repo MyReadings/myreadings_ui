@@ -44,13 +44,13 @@ app.get('/config.js', (req, res) => {
     keycloakUrl = `https://${KC_SERVICE_NAME}.${appsDomain}/`
   }
   res.type('application/javascript')
-  res.send(`window.__APP_CONFIG__ = {
-  VITE_API_URL: "/",
-  VITE_COVER_BASE_URL: "/covers",
-  VITE_VUE_APP_KEYCLOAK_URL: "${keycloakUrl}",
-  VITE_VUE_APP_KEYCLOAK_REALM: "${KC_REALM}",
-  VITE_VUE_APP_KEYCLOAK_CLIENT_ID: "${KC_CLIENT_ID}"
-};`)
+  res.send('window.__APP_CONFIG__ = ' + JSON.stringify({
+    VITE_API_URL: '/',
+    VITE_COVER_BASE_URL: '/covers',
+    VITE_VUE_APP_KEYCLOAK_URL: keycloakUrl,
+    VITE_VUE_APP_KEYCLOAK_REALM: KC_REALM,
+    VITE_VUE_APP_KEYCLOAK_CLIENT_ID: KC_CLIENT_ID,
+  }) + ';')
 })
 
 app.use(createProxyMiddleware({
